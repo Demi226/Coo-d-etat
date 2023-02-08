@@ -14,8 +14,12 @@ public class Player : MonoBehaviour
     [SerializeField] private int _power;
     [SerializeField] private Text _healthText;
 
-    public string horizontalInput = "Horizontal";
-    public string verticalInput = "Vertical";
+    public KeyCode leftKey = KeyCode.A;
+    public KeyCode rightKey = KeyCode.D;
+    public KeyCode upKey = KeyCode.W;
+    public KeyCode downKey = KeyCode.S;
+    private KeyCode newKey;
+    public Text keyBindText;
 
     void Start()
     {
@@ -24,8 +28,49 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        _movement.x = Input.GetAxisRaw(horizontalInput);
-        _movement.y = Input.GetAxisRaw(verticalInput);
+        // Move Player
+        if (Input.GetKey(leftKey))
+        {
+            _movement.x = -1;
+        }
+        else if (Input.GetKey(rightKey))
+        {
+            _movement.x = 1;
+        }
+        else
+        {
+            _movement.x = 0;
+        }
+        if (Input.GetKey(upKey))
+        {
+            _movement.y = 1;
+        }
+        else if (Input.GetKey(downKey))
+        {
+            _movement.y = -1;
+        }
+        else
+        {
+            _movement.y = 0;
+        }
+
+        // If any arrow key is pressed, change key for that direction
+        if (Input.GetKeyUp(KeyCode.LeftArrow))
+        {
+            StartCoroutine(ChangeKey(KeyCode.LeftArrow));
+        }
+        if (Input.GetKeyUp(KeyCode.RightArrow))
+        {
+            StartCoroutine(ChangeKey(KeyCode.RightArrow));
+        }
+        if (Input.GetKeyUp(KeyCode.UpArrow))
+        {
+            StartCoroutine(ChangeKey(KeyCode.UpArrow));
+        }
+        if (Input.GetKeyUp(KeyCode.DownArrow))
+        {
+            StartCoroutine(ChangeKey(KeyCode.DownArrow));
+        }
 
         // Check if the player is actually moving
         if (_movement.sqrMagnitude > 0)
@@ -48,6 +93,52 @@ public class Player : MonoBehaviour
             Fire();
         }
     }
+
+    private IEnumerator ChangeKey(KeyCode arrowKey)
+    {
+        Time.timeScale = 0; // pause the game
+        keyBindText.text = "Press new key for " + arrowKey.ToString();
+        while (!Input.anyKeyDown)
+        {
+            yield return null;
+        }
+
+        newKey = GetNewKey();
+        keyBindText.text = "";
+
+        switch (arrowKey)
+        {
+            case KeyCode.LeftArrow:
+                leftKey = newKey;
+                break;
+            case KeyCode.RightArrow:
+                rightKey = newKey;
+                break;
+            case KeyCode.UpArrow:
+                upKey = newKey;
+                break;
+            case KeyCode.DownArrow:
+                downKey = newKey;
+                break;
+        }
+        Time.timeScale = 1; // resume the game
+    }
+
+    // Read Key Input
+    private KeyCode GetNewKey()
+    {
+        while (true)
+        {
+            foreach (KeyCode vKey in System.Enum.GetValues(typeof(KeyCode)))
+            {
+                if (Input.GetKeyDown(vKey))
+                {
+                    return vKey;
+                }
+            }
+        }
+    }
+
 
     void FixedUpdate()
     {
